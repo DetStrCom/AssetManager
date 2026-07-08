@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - IT Asset Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h1 class="display-4 mb-4">
+                    IT Asset Management
+                </h1>
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-3">
+                        Sign In
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary btn-lg">
+                        Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-box {
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+.feature-box:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

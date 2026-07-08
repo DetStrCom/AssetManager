@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Add Category - IT Asset Management{% endblock %}
+{% block content %}
+<div>
+    <h1>Add New Category</h1>
+</div>
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                {% if form.name.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.name.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">Name of the asset category (e.g., "Laptops", "Network Equipment", "Software Licenses")</div>
+            </div>           
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows="4") }}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">Optional description of what types of assets belong to this category</div>
+            </div>           
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ url_for('categories.category_list') }}" class="btn btn-secondary me-2">Cancel</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

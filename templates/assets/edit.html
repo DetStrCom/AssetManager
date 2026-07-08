@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Asset - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Edit Asset</h1>
+    <div>
+        <a href="{{ url_for('assets.asset_view', id=asset.id) }}" class="btn btn-outline-secondary me-2">
+            View
+        </a>
+        <a href="{{ url_for('assets.asset_list') }}" class="btn btn-secondary">
+            Back to Assets
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            {{ asset.asset_tag }} - {{ asset.name }}
+            {% if not current_user.is_admin() %}
+                <span class="badge ms-2">Limited Edit Mode</span>
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            {% if current_user.is_admin() %}
+                <!-- Admin can edit all fields -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.asset_tag.label(class="form-label") }}
+                            {{ form.asset_tag(class="form-control" + (" is-invalid" if form.asset_tag.errors else "")) }}
+                            {% if form.asset_tag.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.asset_tag.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows="3") }}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.serial_number.label(class="form-label") }}
+                            {{ form.serial_number(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.category_id.label(class="form-label") }}
+                            {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                            {% if form.category_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.category_id.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.purchase_date.label(class="form-label") }}
+                            {{ form.purchase_date(class="form-control" + (" is-invalid" if form.purchase_date.errors else "")) }}
+                            {% if form.purchase_date.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.purchase_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.purchase_price.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.purchase_price(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.warranty_expiry.label(class="form-label") }}
+                            {{ form.warranty_expiry(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.status.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.assigned_to_user_id.label(class="form-label") }}
+                            {{ form.assigned_to_user_id(class="form-select") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form.location_id.label(class="form-label") }}
+                            {{ form.location_id(class="form-select" + (" is-invalid" if form.location_id.errors else "")) }}
+                            {% if form.location_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.location_id.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Regular users can only edit limited fields -->
+                <div class="alert">
+                    As a regular user, you can only update the description and status of assets assigned to you.
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Asset Tag</label>
+                    <input type="text" class="form-control" value="{{ asset.asset_tag }}" readonly>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Asset Name</label>
+                    <input type="text" class="form-control" value="{{ asset.name }}" readonly>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control", rows="3") }}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                    {% if form.status.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.status.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ url_for('assets.asset_view', id=asset.id) }}" class="btn btn-secondary me-2">Cancel</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

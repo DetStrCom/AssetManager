@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Locations - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Locations</h1>
+    {% if current_user.is_admin() %}
+        <a href="{{ url_for('locations.location_create') }}" class="btn btn-primary">
+            Add Location
+        </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if locations %}
+            <div class="row">
+                {% for location in locations %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{ location.office_name }}
+                            </h5>
+                            <div class="card-text">
+                                <p class="mb-1">
+                                    Address: {{ location.address }}
+                                </p>
+                                <p class="mb-1">
+                                    City: {{ location.city }}, {{ location.country }}
+                                </p>
+                                {% if location.contact_phone %}
+                                <p class="mb-2">
+                                    Phone: {{ location.contact_phone }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            {% if current_user.is_admin() %}
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('locations.location_edit', id=location.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                    Edit
+                                </a>
+                                <form method="POST" action="{{ url_for('locations.location_delete', id=location.id) }}" class="d-inline"
+                                      onsubmit="return confirmDelete('Are you sure you want to delete {{ location.office_name }}?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <h4>No Locations Found</h4>
+                <p>No office locations have been added to the system yet.</p>
+                {% if current_user.is_admin() %}
+                    <a href="{{ url_for('locations.location_create') }}" class="btn btn-primary">
+                        Add First Location
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

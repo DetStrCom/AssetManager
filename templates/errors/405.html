@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Method Not Allowed - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <h1 class="display-1 text-muted">405</h1>
+        <h2>Method Not Allowed</h2>
+        <p class="text-muted mb-4">The request method is not supported for this URL.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Asset Categories</h1>
+    {% if current_user.is_admin() %}
+        <a href="{{ url_for('categories.category_create') }}" class="btn btn-primary">Add Category</a> 
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if categories %}
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            {% if category.description %}
+                            <p class="card-text">{{ category.description }}</p>
+                            {% else %}
+                            <p class="card-text text-muted">No description provided.</p>
+                            {% endif %}
+                            <div class="d-flex gap-2">
+                                {% if current_user.is_admin() %}
+                                <a href="{{ url_for('categories.category_edit', id=category.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">Edit</a>
+                                <form method="POST" action="{{ url_for('categories.category_delete', id=category.id) }}" class="d-inline"
+                                      onsubmit="return confirmDelete('Are you sure you want to delete {{ category.name }}?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-tags fa-3x mb-3"></i>
+                <h4>No Categories Found</h4>
+                <p>No asset categories have been created yet.</p>
+                {% if current_user.is_admin() %}
+                    <a href="{{ url_for('categories.category_create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add First Category
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

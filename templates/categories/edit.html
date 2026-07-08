@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Category - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-edit me-2"></i>Edit Category</h1>
+    <a href="{{ url_for('categories.category_list') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Categories
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-tag me-2"></i>{{ category.name }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                {% if form.name.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.name.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows="4") }}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ url_for('categories.category_list') }}" class="btn btn-secondary me-2">Cancel</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="fas fa-box me-2"></i>Assets in this Category</h6>
+            </div>
+            <div class="card-body">
+                {% if category.assets %}
+                    <div class="row mb-4">
+                        {% set available = category.assets|selectattr("status", "equalto", "Available")|list|length %}
+                        {% set in_use = category.assets|selectattr("status", "equalto", "In Use")|list|length %}
+                        {% set maintenance = category.assets|selectattr("status", "equalto", "Maintenance")|list|length %}
+                        {% set retired = category.assets|selectattr("status", "equalto", "Retired")|list|length %}
+                        
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ available }}</h4>
+                                    <p class="mb-0">Available</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ in_use }}</h4>
+                                    <p class="mb-0">In Use</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center">
+                                    <h4>{{ maintenance }}</h4>
+                                    <p class="mb-0">Maintenance</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ retired }}</h4>
+                                    <p class="mb-0">Retired</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Asset Tag</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Assigned To</th>
+                                    <th>Location</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in category.assets %}
+                                <tr>
+                                    <td><strong>{{ asset.asset_tag }}</strong></td>
+                                    <td>{{ asset.name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if asset.status == 'Available' else 'info' if asset.status == 'In Use' else 'warning' if asset.status == 'Maintenance' else 'danger' }}">
+                                            {{ asset.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if asset.assigned_user %}
+                                            {{ asset.assigned_user.username }}
+                                        {% else %}
+                                            <span class="text-muted">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ asset.location.office_name }}</td>
+                                    <td>
+                                        <a href="{{ url_for('assets.asset_view', id=asset.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No assets in this category yet.</p>
+                        <a href="{{ url_for('assets.asset_create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Asset to Category
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Add Location - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Add New Location</h1>
+    <a href="{{ url_for('locations.location_list') }}" class="btn btn-secondary">
+        Back to Locations
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.office_name.label(class="form-label") }}
+                {{ form.office_name(class="form-control" + (" is-invalid" if form.office_name.errors else "")) }}
+                {% if form.office_name.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.office_name.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">Name of the office or location (e.g., "New York HQ", "London Office")</div>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.address.label(class="form-label") }}
+                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else "")) }}
+                {% if form.address.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.address.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">Street address of the location</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.city.label(class="form-label") }}
+                        {{ form.city(class="form-control" + (" is-invalid" if form.city.errors else "")) }}
+                        {% if form.city.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.city.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.country.label(class="form-label") }}
+                        {{ form.country(class="form-control" + (" is-invalid" if form.country.errors else "")) }}
+                        {% if form.country.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.country.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                {{ form.contact_phone.label(class="form-label") }}
+                {{ form.contact_phone(class="form-control" + (" is-invalid" if form.contact_phone.errors else "")) }}
+                {% if form.contact_phone.errors %}
+                    <div class="invalid-feedback">
+                        {% for error in form.contact_phone.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text">Optional phone number for the location</div>
+            </div>
+            
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ url_for('locations.location_list') }}" class="btn btn-secondary me-2">Cancel</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Profile</h1>
+    <div class="text-muted">
+        {% if current_user.is_admin() %}
+            <span class="badge">Administrator</span>
+        {% else %}
+            <span class="badge">Regular User</span>
+        {% endif %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Personal Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <h5 class="mt-2">{{ current_user.username }}</h5>
+                    {% if current_user.is_admin() %}
+                        <span class="badge">Administrator</span>
+                    {% else %}
+                        <span class="badge">Regular User</span>
+                    {% endif %}
+                </div>
+                
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ current_user.email }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Department:</strong></td>
+                        <td>{{ current_user.department or '<span class="text-muted">Not set</span>'|safe }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Member Since:</strong></td>
+                        <td>{{ current_user.created_at.strftime('%B %Y') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% if current_user.location %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i class="fas fa-map-marker-alt me-2"></i>My Location</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-building fa-2x text-info me-3"></i>
+                    <div>
+                        <strong>{{ current_user.location.office_name }}</strong><br>
+                        <small class="text-muted">
+                            {{ current_user.location.address }}<br>
+                            {{ current_user.location.city }}, {{ current_user.location.country }}
+                            {% if current_user.location.contact_phone %}
+                                <br>Phone: {{ current_user.location.contact_phone }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">My Assigned Assets</h6>
+                <span class="badge">{{ user_assets|length }} Assets</span>
+            </div>
+            <div class="card-body">
+                {% if user_assets %}
+                    <div class="row mb-4">
+                        {% set available = user_assets|selectattr("status", "equalto", "Available")|list|length %}
+                        {% set in_use = user_assets|selectattr("status", "equalto", "In Use")|list|length %}
+                        {% set maintenance = user_assets|selectattr("status", "equalto", "Maintenance")|list|length %}
+                        {% set retired = user_assets|selectattr("status", "equalto", "Retired")|list|length %}
+                        
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4">{{ available }}</div>
+                                <small class="text-muted">Available</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4">{{ in_use }}</div>
+                                <small class="text-muted">In Use</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4">{{ maintenance }}</div>
+                                <small class="text-muted">Maintenance</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4">{{ retired }}</div>
+                                <small class="text-muted">Retired</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Asset Tag</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Location</th>
+                                    <th>Warranty</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in user_assets %}
+                                <tr>
+                                    <td><strong>{{ asset.asset_tag }}</strong></td>
+                                    <td>{{ asset.name }}</td>
+                                    <td>{{ asset.category.name }}</td>
+                                    <td>
+                                        <span class="badge">
+                                            {{ asset.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ asset.location.office_name }}</td>
+                                    <td>
+                                        {% if asset.warranty_expiry %}
+                                            {% if asset.is_warranty_valid() %}
+                                                <span class="badge">Valid</span>
+                                            {% else %}
+                                                <span class="badge">Expired</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('assets.asset_view', id=asset.id) }}" class="btn btn-outline-primary">
+                                                View
+                                            </a>
+                                            <a href="{{ url_for('assets.asset_edit', id=asset.id) }}" class="btn btn-outline-primary">
+                                                Edit
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <h4>No Assets Assigned</h4>
+                        <p>You don't have any assets assigned to you at the moment.</p>
+                        <p class="small">Contact your administrator if you need access to assets.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if user_assets %}
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Asset Categories</h6>
+                    </div>
+                    <div class="card-body">
+                        {% set categories = {} %}
+                        {% for asset in user_assets %}
+                            {% set _ = categories.update({asset.category.name: categories.get(asset.category.name, 0) + 1}) %}
+                        {% endfor %}
+                        
+                        {% for category, count in categories.items() %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ category }}</span>
+                            <span class="badge bg-secondary">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Warranty Alerts</h6>
+                    </div>
+                    <div class="card-body">
+                        {% set expired_warranties = user_assets|selectattr("warranty_expiry")|rejectattr("is_warranty_valid")|list %}
+                        {% set valid_warranties = user_assets|selectattr("warranty_expiry")|selectattr("is_warranty_valid")|list %}
+                        
+                        {% if expired_warranties %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>{{ expired_warranties|length }}</strong> asset(s) have expired warranties
+                            </div>
+                        {% endif %}
+                        
+                        {% if valid_warranties %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>{{ valid_warranties|length }}</strong> asset(s) have valid warranties
+                            </div>
+                        {% endif %}
+                        
+                        {% if not expired_warranties and not valid_warranties %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                <p class="mb-0">No warranty information available</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

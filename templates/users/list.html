@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Users - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>User Management</h1>
+    <div class="text-muted">
+        Admin Only Area
+    </div>
+</div>
+<div class="row mb-4">
+    {% set admin_users = users|selectattr("role", "equalto", "admin")|list|length %}
+    {% set regular_users = users|selectattr("role", "equalto", "regular")|list|length %}
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ users|length }}</h4>
+                <p class="card-text">Total Users</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ admin_users }}</h4>
+                <p class="card-text">Administrators</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4 class="card-title">{{ regular_users }}</h4>
+                <p class="card-text">Regular Users</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">
+        <h6 class="card-title mb-0"><i class="fas fa-list me-2"></i>All Users</h6>
+    </div>
+    <div class="card-body">
+        {% if users %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Department</th>
+                            <th>Location</th>
+                            <th>Assets Assigned</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ user.username }}</strong>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_admin() %}
+                                    <span class="badge bg-warning text-dark">Admin</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Regular</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.department or '<span class="text-muted">Not Set</span>'|safe }}</td>
+                            <td>
+                                {% if user.location %}
+                                    {{ user.location.office_name }}
+                                {% else %}
+                                    <span class="text-muted">Not Set</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge">{{ user.assigned_assets|length }}</span>
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#userModal{{ user.id }}">
+                                        View
+                                    </button>
+                                    {% if user.id != current_user.id %}
+                                    <form method="POST" action="{{ url_for('users.user_toggle_active', id=user.id) }}" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to {{ 'deactivate' if user.is_active else 'activate' }} {{ user.username }}?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        {% if user.is_active %}
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">Deactivate</button>
+                                        {% else %}
+                                        <button type="submit" class="btn btn-outline-success btn-sm">Activate</button>
+                                        {% endif %}
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h4>No Users Found</h4>
+                <p>No users have been registered in the system yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% for user in users %}
+<div class="modal fade" id="userModal{{ user.id }}" tabindex="-1" aria-labelledby="userModalLabel{{ user.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalLabel{{ user.id }}">
+                    <i class="fas fa-user-circle me-2"></i>{{ user.username }}
+                    {% if user.is_admin() %}
+                        <span class="badge bg-warning text-dark ms-2">Admin</span>
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle me-2"></i>User Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Username:</strong></td>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Role:</strong></td>
+                                <td>
+                                    {% if user.is_admin() %}
+                                        <span class="badge bg-warning text-dark">Administrator</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Regular User</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Department:</strong></td>
+                                <td>{{ user.department or 'Not specified' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Location:</strong></td>
+                                <td>
+                                    {% if user.location %}
+                                        {{ user.location.office_name }}, {{ user.location.city }}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Joined:</strong></td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-box me-2"></i>Assigned Assets</h6>
+                        {% if user.assigned_assets %}
+                            <div class="list-group list-group-flush">
+                                {% for asset in user.assigned_assets %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <strong>{{ asset.asset_tag }}</strong> - {{ asset.name }}
+                                        <br><small class="text-muted">{{ asset.category.name }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if asset.status == 'Available' else 'info' if asset.status == 'In Use' else 'warning' if asset.status == 'Maintenance' else 'danger' }}">
+                                        {{ asset.status }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <p class="mb-0">No assets assigned</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

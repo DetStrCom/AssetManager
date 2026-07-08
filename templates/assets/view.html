@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ asset.asset_tag }} - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Asset Details</h1>
+    <div>
+        {% if current_user.is_admin() or asset.assigned_to_user_id == current_user.id %}
+            <a href="{{ url_for('assets.asset_edit', id=asset.id) }}" class="btn btn-outline-primary me-2">
+                Edit
+            </a>
+        {% endif %}
+        <a href="{{ url_for('assets.asset_list') }}" class="btn btn-secondary">
+            Back to Assets
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    {{ asset.asset_tag }} - {{ asset.name }}
+                    <span class="badge ms-2 bg-{{ 'success' if asset.status == 'Available' else 'info' if asset.status == 'In Use' else 'warning' if asset.status == 'Maintenance' else 'danger' }}">
+                        {{ asset.status }}
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Asset Tag:</strong></td>
+                                <td>{{ asset.asset_tag }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>{{ asset.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category:</strong></td>
+                                <td>{{ asset.category.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Serial Number:</strong></td>
+                                <td>{{ asset.serial_number or 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if asset.status == 'Available' else 'info' if asset.status == 'In Use' else 'warning' if asset.status == 'Maintenance' else 'danger' }}">
+                                        {{ asset.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Financial Information</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Purchase Date:</strong></td>
+                                <td>{{ asset.purchase_date.strftime('%Y-%m-%d') if asset.purchase_date else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Purchase Price:</strong></td>
+                                <td>${{ "%.2f"|format(asset.purchase_price) if asset.purchase_price else 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Warranty Expiry:</strong></td>
+                                <td>
+                                    {% if asset.warranty_expiry %}
+                                        {{ asset.warranty_expiry.strftime('%Y-%m-%d') }}
+                                        {% if asset.is_warranty_valid() %}
+                                            <span class="badge bg-success ms-1">Valid</span>
+                                        {% else %}
+                                            <span class="badge bg-danger ms-1">Expired</span>
+                                        {% endif %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>                
+                {% if asset.description %}
+                    <div class="border-top pt-3">
+                        <h6>Description</h6>
+                        <p>{{ asset.description }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Assignment</h6>
+            </div>
+            <div class="card-body">
+                {% if asset.assigned_user %}
+                    <div>
+                        <strong>{{ asset.assigned_user.username }}</strong><br>
+                        <small class="text-muted">{{ asset.assigned_user.email }}</small><br>
+                        <small class="text-muted">{{ asset.assigned_user.department or 'No Department' }}</small>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <p class="mb-0">Not assigned to any user</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Location</h6>
+            </div>
+            <div class="card-body">
+                <div>
+                    <strong>{{ asset.location.office_name }}</strong><br>
+                    <small class="text-muted">
+                        {{ asset.location.address }}<br>
+                        {{ asset.location.city }}, {{ asset.location.country }}
+                        {% if asset.location.contact_phone %}
+                            <br>{{ asset.location.contact_phone }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Category</h6>
+            </div>
+            <div class="card-body">
+                <div>
+                    <strong>{{ asset.category.name }}</strong><br>
+                    {% if asset.category.description %}
+                        <small class="text-muted">{{ asset.category.description }}</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Asset Timeline</h6>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6 class="timeline-title">Asset Created</h6>
+                            <p class="timeline-text">Asset was added to the system</p>
+                            <small class="text-muted">{{ asset.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                    </div>
+                    {% if asset.updated_at != asset.created_at %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6 class="timeline-title">Last Updated</h6>
+                            <p class="timeline-text">Asset information was modified</p>
+                            <small class="text-muted">{{ asset.updated_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}{% endblock %}
