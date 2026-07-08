@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: it-asset-manager
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.13.5
